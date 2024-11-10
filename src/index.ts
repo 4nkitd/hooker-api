@@ -44,9 +44,6 @@ async function handleNewHookRequest(request: Request, env: Env): Promise<Respons
 }
 
 async function handleNewRequest(request: Request, env: Env): Promise<Response> {
-	if (request.method !== 'POST') {
-		return new Response('Method Not Allowed', { status: 405 });
-	}
 
 	const client = env.DB;
 
