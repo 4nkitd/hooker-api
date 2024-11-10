@@ -55,7 +55,7 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 			return new Response(JSON.stringify({
 				"status": false,
 				"error": "Webhook not found",
-			}), { status: 404 });
+			}), { status: 404, headers: corsHeaders});
 		}
 
 		let requestbody = await request.json();
