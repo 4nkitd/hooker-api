@@ -33,7 +33,10 @@ async function handleNewHookRequest(request: Request, env: Env): Promise<Respons
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error) {
-		return new Response('Internal Server Error', { status: 500 });
+		return new Response(JSON.stringify({
+			"append": "Error while creating new hook",
+			"error": error
+		}), { status: 500 });
 	}
 
 }
