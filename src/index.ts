@@ -29,13 +29,14 @@ async function handleNewHookRequest(request: Request, env: Env): Promise<Respons
 		`;
 		await client.prepare(insertQuery).bind(snowflakeId, null, null, 1, 0, 0, null, null).run();
 
-		return new Response(JSON.stringify({ id: snowflakeId }), {
+		return new Response(JSON.stringify({ status: true, id: snowflakeId }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error) {
 		return new Response(JSON.stringify({
-			"append": "Error while creating new hook",
-			"error": error
+			"status": false,
+			"error": "Error while creating new hook",
+			"log": error.message,
 		}), { status: 500 });
 	}
 
