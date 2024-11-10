@@ -77,8 +77,8 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 
 		const now_timestamp = new Date().toISOString();
 		const insertQuery = `INSERT INTO requests
-			(uuid,webhook_id, body, headers, ip, method, is_cron, updated_at, created_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			(uuid, webhook_id, body, headers, ip, method, is_cron, updated_at, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`;
 		await client.prepare(insertQuery).bind(requestID, hookId, JSON.stringify(requestbody), headers, ip, method, 0, now_timestamp, now_timestamp).run();
 		return new Response(JSON.stringify({ status: true, id: requestID, webhhok: webhookData }), {
