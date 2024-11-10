@@ -15,9 +15,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Removed duplicate default export
 async function handleNewHookRequest(request: Request, env: Env): Promise<Response> {
-	if (request.method !== 'POST') {
-		return new Response('Method Not Allowed', { status: 405 });
-	}
 
 	const client = env.DB;
 
