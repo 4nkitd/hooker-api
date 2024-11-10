@@ -94,6 +94,85 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 
 }
 
+async function handleWebhookListRequest(request: Request, env: Env): Promise<Response> {
+	const client = env.DB;
+	try {
+		const selectQuery = `SELECT * FROM webhooks`;
+		const webhooks = await client.prepare(selectQuery).all();
+		return new Response(JSON.stringify({ status: true, webhooks }), {
+			headers: { 'Content-Type': 'application/json' },
+		});
+	} catch (error) {
+		return new Response(JSON.stringify({
+			"status": false,
+			"error": "Error while fetching webhooks",
+			"log": error.message,
+		}), { status: 500 });
+	}
+}
+
+async function handleWebhookRequestsList(request: Request, env: Env): Promise<Response> {
+	const client = env.DB;
+	try {
+		const url = new URL(request.url);
+		const webhookId = url.pathname.split('/webhook/')[1].split('/list')[0];
+
+		if (!webhookId) {
+			return new Response(JSON.stringify({
+				"status": false,
+				"error": "Webhook ID not found",
+			}), { status: 400 });
+		}
+
+		const selectQuery = `SELECT ip, method, uuid, created_at FROM requests WHERE webhook_id = ?`;
+		const requests = await client.prepare(selectQuery).bind(webhookId).all();
+		return new Response(JSON.stringify({ status: true, requests }), {
+			headers: { 'Content-Type': 'application/json' },
+		});
+	} catch (error) {
+		return new Response(JSON.stringify({
+			"status": false,
+			"error": "Error while fetching requests",
+			"log": error.message,
+		}), { status: 500 });
+	}
+}
+
+async function handleRequestDetails(request: Request, env: Env): Promise<Response> {
+	const client = env.DB;
+	try {
+		const url = new URL(request.url);
+		const requestId = url.pathname.split('/request/')[1];
+
+		if (!requestId) {
+			return new Response(JSON.stringify({
+				"status": false,
+				"error": "Request ID not found",
+			}), { status: 400 });
+		}
+
+		const selectQuery = `SELECT * FROM requests WHERE uuid = ?`;
+		const requestData = await client.prepare(selectQuery).bind(requestId).first();
+
+		if (!requestData) {
+			return new Response(JSON.stringify({
+				"status": false,
+				"error": "Request not found",
+			}), { status: 404 });
+		}
+
+		return new Response(JSON.stringify({ status: true, request: requestData }), {
+			headers: { 'Content-Type': 'application/json' },
+		});
+	} catch (error) {
+		return new Response(JSON.stringify({
+			"status": false,
+			"error": "Error while fetching request details",
+			"log": error.message,
+		}), { status: 500 });
+	}
+}
+
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
@@ -104,6 +183,21 @@ export default {
 		if (rPathMatch) {
 			return handleNewRequest(request, env);
 		}
+
+		if (url.pathname === '/webhook/list') {
+			return handleWebhookListRequest(request, env);
+		}
+
+		const webhookListMatch = url.pathname.match(/^\/webhook\/(.+)\/list/);
+		if (webhookListMatch) {
+			return handleWebhookRequestsList(request, env);
+		}
+
+		const requestDetailsMatch = url.pathname.match(/^\/request\/(.+)/);
+		if (requestDetailsMatch) {
+			return handleRequestDetails(request, env);
+		}
+
 		return new Response('Hello World!');
 	},
 } satisfies ExportedHandler<Env>;
