@@ -23,11 +23,12 @@ async function handleNewHookRequest(request: Request, env: Env): Promise<Respons
 
 	try {
 		const snowflakeId = uuidv4();
+		const now_timestamp = new Date().toISOString();
 		const insertQuery = ` INSERT INTO webhooks
 			(uuid, user_id, description, active, total_req_count, is_redirect, custom_js, salt, updated_at, created_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`;
-		await client.prepare(insertQuery).bind(snowflakeId, null, null, 1, 0, 0, null, null).run();
+		await client.prepare(insertQuery).bind(snowflakeId, null, null, 1, 0, 0, null, null, now_timestamp, now_timestamp).run();
 
 		return new Response(JSON.stringify({ status: true, id: snowflakeId }), {
 			headers: { 'Content-Type': 'application/json' },
