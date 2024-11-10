@@ -1,17 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Bind resources to your worker in `wrangler.toml`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
+const corsHeaders = {
+	"Access-Control-Allow-Origin": "*",
+	"Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
+	"Access-Control-Max-Age": "86400",
+}
 
 // Removed duplicate default export
 async function handleNewHookRequest(request: Request, env: Env): Promise<Response> {
@@ -28,14 +21,14 @@ async function handleNewHookRequest(request: Request, env: Env): Promise<Respons
 		await client.prepare(insertQuery).bind(snowflakeId, null, null, 1, 0, 0, null, null, now_timestamp, now_timestamp).run();
 
 		return new Response(JSON.stringify({ status: true, id: snowflakeId }), {
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json', ...corsHeaders },
 		});
 	} catch (error) {
 		return new Response(JSON.stringify({
 			"status": false,
 			"error": "Error while creating new hook",
 			"log": error.message,
-		}), { status: 500 });
+		}), { status: 500, headers: corsHeaders });
 	}
 
 }
@@ -79,14 +72,14 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 		`;
 		await client.prepare(insertQuery).bind(requestID, hookId, JSON.stringify(requestbody), headers, ip, method, 0, now_timestamp, now_timestamp).run();
 		return new Response(JSON.stringify({ status: true, id: requestID, webhhok: webhookData }), {
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json', ...corsHeaders },
 		});
 	} catch (error) {
 		return new Response(JSON.stringify({
 			"status": false,
 			"error": "Error while creating new hook",
 			"log": error.message,
-		}), { status: 500 });
+		}), { status: 500, headers: corsHeaders });
 	}
 
 }
@@ -100,20 +93,20 @@ async function handleWebhookListRequest(request: Request, env: Env): Promise<Res
 			return new Response(JSON.stringify({
 				"status": false,
 				"error": "Webhooks not found",
-			}), { status: 404 });
+			}), { status: 404, headers: corsHeaders });
 		}
 
 		const webhooks_list = webhooks.results
 
 		return new Response(JSON.stringify({ status: true, webhooks: webhooks_list }), {
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json', ...corsHeaders },
 		});
 	} catch (error) {
 		return new Response(JSON.stringify({
 			"status": false,
 			"error": "Error while fetching webhooks",
 			"log": error.message,
-		}), { status: 500 });
+		}), { status: 500, headers: corsHeaders });
 	}
 }
 
@@ -127,7 +120,7 @@ async function handleWebhookRequestsList(request: Request, env: Env): Promise<Re
 			return new Response(JSON.stringify({
 				"status": false,
 				"error": "Webhook ID not found",
-			}), { status: 400 });
+			}), { status: 400, headers: corsHeaders });
 		}
 
 		const selectQuery = `SELECT ip, method, uuid, created_at FROM requests WHERE webhook_id = ?`;
@@ -136,19 +129,19 @@ async function handleWebhookRequestsList(request: Request, env: Env): Promise<Re
 			return new Response(JSON.stringify({
 				"status": false,
 				"error": "Requests not found",
-			}), { status: 404 });
+			}), { status: 404, headers: corsHeaders });
 		}
 
 		const webhook_requests = requests.results
 		return new Response(JSON.stringify({ status: true, requests: webhook_requests }), {
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json', ...corsHeaders },
 		});
 	} catch (error) {
 		return new Response(JSON.stringify({
 			"status": false,
 			"error": "Error while fetching requests",
 			"log": error.message,
-		}), { status: 500 });
+		}), { status: 500, headers: corsHeaders });
 	}
 }
 
@@ -162,7 +155,7 @@ async function handleRequestDetails(request: Request, env: Env): Promise<Respons
 			return new Response(JSON.stringify({
 				"status": false,
 				"error": "Request ID not found",
-			}), { status: 400 });
+			}), { status: 400, headers: corsHeaders });
 		}
 
 		const selectQuery = `SELECT * FROM requests WHERE uuid = ?`;
@@ -172,18 +165,18 @@ async function handleRequestDetails(request: Request, env: Env): Promise<Respons
 			return new Response(JSON.stringify({
 				"status": false,
 				"error": "Request not found",
-			}), { status: 404 });
+			}), { status: 404, headers: corsHeaders });
 		}
 
 		return new Response(JSON.stringify({ status: true, data: requestData }), {
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json', ...corsHeaders },
 		});
 	} catch (error) {
 		return new Response(JSON.stringify({
 			"status": false,
 			"error": "Error while fetching request details",
 			"log": error.message,
-		}), { status: 500 });
+		}), { status: 500, headers: corsHeaders });
 	}
 }
 
@@ -191,10 +184,7 @@ async function handleOptions(request: Request): Promise<Response> {
 
 	return new Response(null, {
 		headers: {
-
-			"Access-Control-Allow-Origin": "*",
-			"Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
-			"Access-Control-Max-Age": "86400",
+			...corsHeaders,
 			"Access-Control-Allow-Headers": request.headers.get(
 				"Access-Control-Request-Headers"
 			) || "",
@@ -202,8 +192,6 @@ async function handleOptions(request: Request): Promise<Response> {
 	});
 
 }
-
-
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
