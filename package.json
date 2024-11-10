@@ -6,7 +6,7 @@
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "start": "wrangler dev",
-		"build": "wrangler build",
+    "build": "wrangler build",
     "test": "vitest",
     "cf-typegen": "wrangler types"
   },
@@ -16,5 +16,8 @@
     "typescript": "^5.5.2",
     "vitest": "2.0.5",
     "wrangler": "^3.60.3"
+  },
+  "dependencies": {
+    "uuid": "^11.0.2"
   }
 }
