@@ -99,7 +99,16 @@ async function handleWebhookListRequest(request: Request, env: Env): Promise<Res
 	try {
 		const selectQuery = `SELECT * FROM webhooks`;
 		const webhooks = await client.prepare(selectQuery).all();
-		return new Response(JSON.stringify({ status: true, webhooks }), {
+		if (!webhooks.error) {
+			return new Response(JSON.stringify({
+				"status": false,
+				"error": "Webhooks not found",
+			}), { status: 404 });
+		}
+
+		const webhooks_list = webhooks.results
+
+		return new Response(JSON.stringify({ status: true, webhooks: webhooks_list }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error) {
@@ -126,7 +135,15 @@ async function handleWebhookRequestsList(request: Request, env: Env): Promise<Re
 
 		const selectQuery = `SELECT ip, method, uuid, created_at FROM requests WHERE webhook_id = ?`;
 		const requests = await client.prepare(selectQuery).bind(webhookId).all();
-		return new Response(JSON.stringify({ status: true, requests }), {
+		if (!requests.error) {
+			return new Response(JSON.stringify({
+				"status": false,
+				"error": "Requests not found",
+			}), { status: 404 });
+		}
+
+		const webhook_requests = requests.results
+		return new Response(JSON.stringify({ status: true, requests: webhook_requests }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error) {
@@ -161,7 +178,9 @@ async function handleRequestDetails(request: Request, env: Env): Promise<Respons
 			}), { status: 404 });
 		}
 
-		return new Response(JSON.stringify({ status: true, request: requestData }), {
+		let apiRequest_Data = requestData.results;
+
+		return new Response(JSON.stringify({ status: true, request: apiRequest_Data }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error) {
