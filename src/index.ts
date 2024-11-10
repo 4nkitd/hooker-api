@@ -178,9 +178,7 @@ async function handleRequestDetails(request: Request, env: Env): Promise<Respons
 			}), { status: 404 });
 		}
 
-		let apiRequest_Data = requestData.results;
-
-		return new Response(JSON.stringify({ status: true, data: apiRequest_Data }), {
+		return new Response(JSON.stringify({ status: true, data: requestData }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error) {
