@@ -180,7 +180,7 @@ async function handleRequestDetails(request: Request, env: Env): Promise<Respons
 
 		let apiRequest_Data = requestData.results;
 
-		return new Response(JSON.stringify({ status: true, request: apiRequest_Data }), {
+		return new Response(JSON.stringify({ status: true, data: apiRequest_Data }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error) {
