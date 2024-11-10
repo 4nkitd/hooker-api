@@ -99,7 +99,7 @@ async function handleWebhookListRequest(request: Request, env: Env): Promise<Res
 	try {
 		const selectQuery = `SELECT * FROM webhooks`;
 		const webhooks = await client.prepare(selectQuery).all();
-		if (!webhooks.error) {
+		if (!webhooks) {
 			return new Response(JSON.stringify({
 				"status": false,
 				"error": "Webhooks not found",
@@ -135,7 +135,7 @@ async function handleWebhookRequestsList(request: Request, env: Env): Promise<Re
 
 		const selectQuery = `SELECT ip, method, uuid, created_at FROM requests WHERE webhook_id = ?`;
 		const requests = await client.prepare(selectQuery).bind(webhookId).all();
-		if (!requests.error) {
+		if (!requests) {
 			return new Response(JSON.stringify({
 				"status": false,
 				"error": "Requests not found",
