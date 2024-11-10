@@ -112,3 +112,9 @@ enabled = true
 # [[vectorize]]
 # binding = "MY_INDEX"
 # index_name = "my-index"
+
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hooker"
+database_id = "d9c9074d-fbe1-43be-bfd9-952b821e63a1"

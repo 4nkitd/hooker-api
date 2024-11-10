@@ -6,6 +6,7 @@
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "start": "wrangler dev",
+		"build": "wrangler build",
     "test": "vitest",
     "cf-typegen": "wrangler types"
   },
