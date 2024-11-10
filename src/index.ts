@@ -59,7 +59,7 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 		}
 
 		let requestbody = await request.json();
-		let headers = JSON.stringify(request.headers);
+		let headers = Object.fromEntries(request.headers);
 		let method = request.method;
 		let ip = request.headers.get('cf-connecting-ip');
 
