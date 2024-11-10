@@ -187,7 +187,7 @@ async function handleRequestDetails(request: Request, env: Env): Promise<Respons
 	}
 }
 
-async function handleOptions(request) {
+async function handleOptions(request: Request): Promise<Response> {
 	if (
 		request.headers.get("Origin") !== null &&
 		request.headers.get("Access-Control-Request-Method") !== null &&
@@ -198,14 +198,14 @@ async function handleOptions(request) {
 			"Access-Control-Allow-Origin": "*",
 			"Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
 			"Access-Control-Max-Age": "86400",
-		  };
+		};
 		// Handle CORS preflight requests.
 		return new Response(null, {
 			headers: {
 				...corsHeaders,
 				"Access-Control-Allow-Headers": request.headers.get(
-					"Access-Control-Request-Headers",
-				),
+					"Access-Control-Request-Headers"
+				) || "",
 			},
 		});
 	} else {
@@ -226,7 +226,7 @@ export default {
 		if (request.method === "OPTIONS") {
 			// Handle CORS preflight requests
 			return handleOptions(request);
-		  }
+		}
 
 		const url = new URL(request.url);
 		if (url.pathname === '/new/hook') {
