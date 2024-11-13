@@ -72,7 +72,7 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`;
 		await client.prepare(insertQuery).bind(requestID, hookId, JSON.stringify(requestbody), headers, ip, method, 0, now_timestamp, now_timestamp).run();
-		return new Response(JSON.stringify({ status: true, id: requestID, webhhok: webhookData }), {
+		return new Response(JSON.stringify({ status: true, id: requestID, webhook_id: webhookData.id }), {
 			headers: { 'Content-Type': 'application/json', ...corsHeaders },
 		});
 	} catch (error) {
@@ -88,7 +88,18 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 async function handleWebhookListRequest(request: Request, env: Env): Promise<Response> {
 	const client = env.DB;
 	try {
-		const selectQuery = `SELECT * FROM webhooks`;
+
+		// query param
+		let sort = request.url.split('?sort=').pop();
+
+		let follow = ""
+		if(sort === 'old') {
+			follow = "ASC"
+		} else {
+			follow = "DESC"
+		}
+
+		const selectQuery = `SELECT * FROM webhooks ORDER BY created_at ${follow}`;
 		const webhooks = await client.prepare(selectQuery).all();
 		if (!webhooks) {
 			return new Response(JSON.stringify({
