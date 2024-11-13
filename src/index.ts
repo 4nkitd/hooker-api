@@ -89,17 +89,8 @@ async function handleWebhookListRequest(request: Request, env: Env): Promise<Res
 	const client = env.DB;
 	try {
 
-		// query param
-		let sort = request.url.split('?sort=').pop();
 
-		let follow = ""
-		if(sort === 'old') {
-			follow = "ASC"
-		} else {
-			follow = "DESC"
-		}
-
-		const selectQuery = `SELECT * FROM webhooks ORDER BY created_at ${follow}`;
+		const selectQuery = `SELECT * FROM webhooks `;
 		const webhooks = await client.prepare(selectQuery).all();
 		if (!webhooks) {
 			return new Response(JSON.stringify({
@@ -125,6 +116,17 @@ async function handleWebhookListRequest(request: Request, env: Env): Promise<Res
 async function handleWebhookRequestsList(request: Request, env: Env): Promise<Response> {
 	const client = env.DB;
 	try {
+
+		// query param
+		let sort = request.url.split('?sort=').pop();
+
+		let follow = ""
+		if(sort === 'old') {
+			follow = "ASC"
+		} else {
+			follow = "DESC"
+		}
+
 		const url = new URL(request.url);
 		const webhookId = url.pathname.split('/webhook/')[1].split('/list')[0];
 
@@ -135,7 +137,7 @@ async function handleWebhookRequestsList(request: Request, env: Env): Promise<Re
 			}), { status: 400, headers: corsHeaders });
 		}
 
-		const selectQuery = `SELECT ip, method, uuid, created_at FROM requests WHERE webhook_id = ?`;
+		const selectQuery = `SELECT ip, method, uuid, created_at FROM requests WHERE webhook_id = ? ORDER BY created_at ${follow}`;
 		const requests = await client.prepare(selectQuery).bind(webhookId).all();
 		if (!requests) {
 			return new Response(JSON.stringify({
