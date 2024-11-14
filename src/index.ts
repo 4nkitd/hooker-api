@@ -41,6 +41,14 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 
 		let hookId = request.url.split('/r/').pop();
 
+		if (hookId && hookId.includes('?')) {
+			hookId = hookId.split('?')[0];
+		}
+
+
+		const url = new URL(request.url);
+		const queryParams = Object.fromEntries(url.searchParams.entries());
+
 		if (!hookId) {
 			return new Response(JSON.stringify({
 				"status": false,
@@ -58,10 +66,30 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 			}), { status: 404, headers: corsHeaders});
 		}
 
-		let requestbody = await request.json();
+		let requestBody = "";
+
+		if ( request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH' ) {
+
+			if (request.headers.get('content-type') === 'application/json') {
+				requestBody = await request.json();
+			} else if (request.headers.get('content-type') === 'application/x-www-form-urlencoded') {
+				const formData = await request.formData();
+				requestBody = JSON.stringify(Object.fromEntries(formData.entries()));
+			} else {
+				requestBody = await request.text();
+			}
+
+			if (!requestBody) {
+				requestBody = "{}";
+			}
+
+		}
+
 		let headersObject = Object.fromEntries(request.headers);
+		headersObject['query_params'] = JSON.stringify(queryParams);
 		let headers = JSON.stringify(headersObject);
 		let method = request.method;
+
 		let ip = request.headers.get('cf-connecting-ip');
 
 		let requestID = uuidv4();
