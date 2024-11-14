@@ -71,7 +71,8 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 		if ( request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH' ) {
 
 			if (request.headers.get('content-type') === 'application/json') {
-				requestBody = await request.json();
+				let jsonBody = await request.json();
+				requestBody = JSON.stringify(jsonBody);
 			} else if (request.headers.get('content-type') === 'application/x-www-form-urlencoded') {
 				const formData = await request.formData();
 				requestBody = JSON.stringify(Object.fromEntries(formData.entries()));
@@ -99,7 +100,7 @@ async function handleNewRequest(request: Request, env: Env): Promise<Response> {
 			(uuid, webhook_id, body, headers, ip, method, is_cron, updated_at, created_at)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`;
-		await client.prepare(insertQuery).bind(requestID, hookId, JSON.stringify(requestbody), headers, ip, method, 0, now_timestamp, now_timestamp).run();
+		await client.prepare(insertQuery).bind(requestID, hookId,requestBody, headers, ip, method, 0, now_timestamp, now_timestamp).run();
 		return new Response(JSON.stringify({ status: true, id: requestID, webhook_id: webhookData.id }), {
 			headers: { 'Content-Type': 'application/json', ...corsHeaders },
 		});
